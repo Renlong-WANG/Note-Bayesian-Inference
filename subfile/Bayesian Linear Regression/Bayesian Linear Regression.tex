@@ -1,0 +1,120 @@
+\documentclass[../note.tex]{subfiles}
+\usepackage{bm}
+
+\begin{document}
+
+
+\chapter{Bayesian Linear Regression}
+
+\section{Basic Settings}
+
+Consider a training dataset 
+\[
+    \mathcal{D} = \left\{(x_i,y_i)\right\}_{i=1}^{N},
+\]
+consisting of $N$ observations, where $\bm{x}_i \in \mathbb{R}^{p}$ denotes the $p$-dimensional feature vector associated with the $i$-th observation and $y_i \in \mathbb{R}$ denotes the corresponding scalar response. 
+
+Define design matrix $\mathbf{X}$, target vector $\bm{y}$, and coefficient vector $\bm{w}$ as 
+\[
+    \mathbf{X} = \begin{bmatrix}
+        \bm{x}_1^{\top} \\
+        \vdots \\
+        \bm{x}_N^{\top}
+    \end{bmatrix} \in \mathbb{R}^{N \times p}, \qquad
+    \bm{y} = \begin{bmatrix}
+        {y}_1 \\
+        \vdots \\
+        {y}_N
+    \end{bmatrix} \in \mathbb{R}^{N}, \qquad
+    \bm{w} = \begin{bmatrix}
+        {w}_1 \\
+        \vdots \\
+        {w}_p
+    \end{bmatrix} \in \mathbb{R}^{p}.
+\]
+
+Under the linear regression model, each observation satisfies
+\[
+    y_i = \bm{w}^{\top} \bm{x}_i + \epsilon_i,
+\]
+where the noise terms are assumed to be independent and identically distributed as
+\[
+    \epsilon_i \overset{\mathrm{i.i.d.}}{\sim}\mathcal N(0,\sigma^2), \qquad i=1,\dots,N.
+\]
+
+Define the noise vector
+\[
+    \bm{\epsilon} = \begin{bmatrix}
+        \epsilon_1 \\
+        \vdots \\
+        \epsilon_N
+    \end{bmatrix}.
+\]
+It follows that
+\[
+    \bm\epsilon \sim \mathcal N(\bm 0,\sigma^2\mathbf I_N),
+\]
+where $\mathbf{I}_N$ denotes the $N\times N$ identity matrix.
+
+For the entire dataset, the linear regression model can therefore be written as
+\[
+    \bm{y} = \mathbf{X}\bm{w} + \bm{\epsilon}.
+\]
+Consequently,
+\[
+    p(\bm{y} | \mathbf{X}, \bm{w}) \sim \mathcal{N}(\mathbf{X}\bm{w}, \sigma \mathbf{I}_N).
+\]
+
+Bayesian method includes two basic steps: inference and prediction, where inference is to estimate posterior $\bm{w}$, while prediction is to predict ${y}^{*}$ given $\bm{x}^{*}$.
+
+\section{Inference}
+
+
+\subsection{Model Establishment}
+
+In Bayesian linear regression, the coefficient vector $\bm{w}$ is treated as a random variable and assigned a prior distribution. We assume that the prior distribution of $\bm{w}$ does not depend on $\mathbf{X}$, i.e., $w\perp X$, and thus $p(\bm w\mid\mathbf X)=p(\bm w)$.
+
+Given the training dataset, Bayesian formula is decomposed as: 
+\[
+    p(\bm{w} | \mathcal{D}) = p(\bm{w} | \mathbf{X}, \bm{y}) = \frac{p(\bm{w}, \mathbf{X}, \bm{y})}{\textcolor{red}{p(\mathbf{X}, \bm{y})}} = \frac{\textcolor{red}{p(\bm{w}, \mathbf{X}, \bm{y})}}{p(\bm{y}|\mathbf{X}) \textcolor{red}{p(\mathbf{X})} } = \frac{\textcolor{red}{p(\bm{w}, \bm{y} | \mathbf{X})}}{p(\bm{y}|\mathbf{X})} = \frac{p(\bm{y} | \mathbf{X}, \bm{w}) \textcolor{red}{p(\bm{w} | \mathbf{X})}}{p(\bm{y}|\mathbf{X})} = \frac{p(\bm{y} | \mathbf{X}, \bm{w}) p(\bm{w})}{p(\bm{y}|\mathbf{X})},
+\]
+where the fifth equality follows from
+\[
+    p(\bm{y} | \mathbf{X}, \bm{w}) = \frac{p(\bm{w}, \mathbf{X}, \bm{y})}{p(\bm{w}, \mathbf{X})} = \frac{p(\bm{w}, \mathbf{X}, \bm{y})}{ p(\bm{w} | \mathbf{X}) p(\mathbf{X})} = \frac{p(\bm{w}, \bm{y} | \mathbf{X})}{p(\bm{w} | \mathbf{X})},
+\]
+and the last equality follows from independency of prior coefficient and design matrix. 
+
+The denominator 
+\[
+    p(\bm{y}\mid\mathbf{X}) = \int p(\bm{y}\mid\mathbf{X},\bm{w}) p(\bm{w})\mathrm{d}\bm{w}
+\]  
+is the marginal likelihood. Since it does not depend on $\bm{w}$, the posterior distribution can be expressed up to a proportionality constant as 
+\[
+    p(\bm{w} | \mathbf{X}, \bm{y}) \propto p(\bm{y} | \mathbf{X}, \bm{w}) p(\bm{w}),
+\]
+where $p(\bm{y} | \mathbf{X}, \bm{w})$ is a likelihood function and $p(\bm{w})$ is a prior function.
+
+Suppose that a zero-mean Gaussian prior is imposed on the coefficient vector:
+\[
+    p(\bm{w}) = \mathcal{N}\left(\bm{0}, \mathbf{\Sigma}_{p}\right),
+\]
+where $\mathbf{\Sigma}_p\in\mathbb{R}^{p\times p}$ denotes the prior covariance matrix.
+
+Since both the likelihood and the prior are Gaussian, their conjugacy implies that the posterior distribution of $\bm{w}$ is also Gaussian:
+\[
+    p(\bm{w} | \mathbf{X}, \bm{y}) = \mathcal{N}(\mu_w, \Sigma_w)
+\]
+Thus,
+\[
+    p(\bm{w} | \mathbf{X}, \bm{y}) \propto \mathcal{N}(\mathbf{X}\bm{w}, \sigma \mathbf{I}_N) \mathcal{N}\left(\bm{0}, \mathbf{\Sigma}_{p}\right).
+\]
+
+The remaining task is therefore to derive the posterior mean $\bm{\mu}_w$ and posterior covariance $\mathbf{\Sigma}_w$.
+
+\subsection{Model Solution}
+
+
+
+\section{Prediction}
+
+\end{document}
