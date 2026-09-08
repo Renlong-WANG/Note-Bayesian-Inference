@@ -1,4 +1,4 @@
-\documentclass[../note.tex]{subfiles}
+\documentclass[../Bayesian_Inference.tex]{subfiles}
 \usepackage{bm}
 
 \begin{document}
@@ -49,9 +49,9 @@ Since subsequent inference depends on the state, the objective is to characteriz
 The belief state is therefore a probability distribution over the possible values of $\bm{x}_t$ conditioned on the available observation and control histories. It is also commonly referred to as the posterior state distribution, information state, or state of knowledge. 
 
 
-\section{Bayesian Filter Derivation}
+\section{Core Formula of Bayesian Filter}
 
-The key idea of Bayesian filter is to represent uncertainty explicitly using the calculas of probability theory. 
+The key idea of the Bayesian filter is to represent uncertainty explicitly using the calculas of probability theory. 
 
 At each time step, the hidden state $\bm{x}_t$ evolves from the previous state $\bm{x}_{t-1}$ under the control input $\bm{u}_t$, while the observation $\bm{z}_t$ is generated from the corresponding state $\bm{x}_t$, as shown in Figure~\ref{fig-1}.
 \begin{figure}[H]
@@ -72,19 +72,131 @@ However, the belief, $p(\text{current sate} | \text{all past information})$, is 
 Using Bayes' rule and the Markov assumptions,
 \[
     \begin{aligned}
-        \mathrm{bel}(\bm{x}_t) & = p(\bm{x}_t | \bm{z}_{1:t}, \bm{u}_{1:t}) = p(\bm{x}_t | \bm{z}_t, \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \\
-        & = \frac{p(\bm{x}_t, \bm{z}_t | \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1})}{p(\bm{z}_t | \bm{u}_t)} \leftarrow \text{Condition probability} \\
-        & = \eta p(\bm{x}_t, \bm{z}_t | \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \leftarrow \text{Normalization constant}\\
-        & = \eta p(\bm{z}_t | \bm{x}_t, \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) p(\bm{x}_t | \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \leftarrow \text{Bayes rule}  \\
-        & = \eta p(\bm{z}_t | \bm{x}_t) p(\bm{x}_t | \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \leftarrow \text{Markov assumption}  \\
-        & = \eta p(\bm{z}_t | \bm{x}_t) \int p(\bm{x}_t, \bm{x}_{t-1} | \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \mathrm{d} x_{t-1} \leftarrow \text{Opposite of marginalization} \\
-        & = \eta p(\bm{z}_t | \bm{x}_t) \int p(\bm{x}_t  | \bm{x}_{t-1}, \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) p (\bm{x}_{t-1} | \bm{u}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \mathrm{d} x_{t-1} \leftarrow \text{Probability chain rule} \\
-        & = \underbrace{\eta p(\bm{z}_t | \bm{x}_t)}_{\text{correction}}  \underbrace{\int p(\bm{x}_t  | \bm{x}_{t-1}, \bm{u}_t) \mathrm{bel}(\bm{x}_{t-1}) \mathrm{d} x_{t-1}}_{\text{prediction}}
+        \mathrm{bel}(\bm{x}_t) & = p(\bm{x}_t | \bm{z}_{1:t}, \bm{u}_{1:t}) = p(\bm{x}_t | \bm{z}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t}) \leftarrow \text{Definition of belief} \\
+        & = \frac{p(\bm{x}_t, \bm{z}_t |\bm{z}_{1:t-1}, \bm{u}_{1:t})}{p(\bm{z}_t | \bm{z}_{1:t-1},\bm{u}_{1:t})} \leftarrow \text{Condition probability} \\
+        & = \eta_t p(\bm{x}_t, \bm{z}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \leftarrow \text{Normalization constant}\\
+        & = \eta_t p(\bm{z}_t | \bm{x}_t, \bm{z}_{1:t-1}, \bm{u}_{1:t}) p(\bm{x}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \leftarrow \text{Bayes rule}  \\
+        & = \eta_t p(\bm{z}_t | \bm{x}_t) p(\bm{x}_t |\bm{z}_{1:t-1}, \bm{u}_{1:t}) \leftarrow \text{Markov assumption}  \\
+        & = \eta_t p(\bm{z}_t | \bm{x}_t) \int p(\bm{x}_t, \bm{x}_{t-1} | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \mathrm{d} x_{t-1} \leftarrow \text{Marginalization} \\
+        & = \eta_t p(\bm{z}_t | \bm{x}_t) \int p(\bm{x}_t  | \bm{x}_{t-1}, \bm{z}_{1:t-1}, \bm{u}_{1:t}) p (\bm{x}_{t-1} | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \mathrm{d} x_{t-1} \leftarrow \text{Probability chain rule} \\
+        & = \eta_t p(\bm{z}_t | \bm{x}_t) \int p(\bm{x}_t  | \bm{x}_{t-1}, \bm{z}_{1:t-1}, \bm{u}_{1:t}) p (\bm{x}_{t-1} | \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) \mathrm{d} x_{t-1} \leftarrow \text{Unnecessary condition} \\
+        & = \underbrace{\eta_t p(\bm{z}_t | \bm{x}_t)}_{\text{correction}}  \underbrace{\int p(\bm{x}_t  | \bm{x}_{t-1}, \bm{u}_t) \mathrm{bel}(\bm{x}_{t-1}) \mathrm{d} x_{t-1}}_{\text{prediction}}
     \end{aligned} 
 \]
-where $\eta$ is a normalization constant and $\eta = \frac{1}{p(\bm{z}_t | \bm{u}_t)}$ and $\mathrm{bel}(x_0)$ = $p(\bm{x}_0)$.
+where $\eta_t$ is a normalization constant,
+\[
+    \eta_t^{-1} = p(\bm{z}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}) = \int p(\bm{z}_t | \bm{x}_{t}) p(\bm{x}_{t} | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \mathrm{d} \bm{x}_t
+\]
+and $\mathrm{bel}(x_0)$ = $p(\bm{x}_0)$.
 
-Bayesian filter therefore provides a recursive update approach to calculate belief tractably consisting of two steps: prediction, which propagates the previous belief through the motion model, and correction, which incorporates the latest observation through the measurement model.
+The Bayesian filter therefore provides a recursive update approach to calculate belief tractably consisting of two steps: prediction, which propagates the previous belief through the state transition model, and correction, which incorporates the latest observation through the observation model.
 
+
+\section{Kalman Filter}
+
+The Kalman filter is a special case of the Bayesian filter, in which the system is assumed to be linear and all uncertainties are modeled as Gaussian.
+
+Suppose that the state transition $\bm{x}_t$ is linear in previous state $\bm{x}_{t-1}$ and control input $\bm{u}_t$, i.e.,
+\[
+    \bm{x}_t = \mathbf{F}_{t} \bm{x}_{t-1} + \mathbf{B}_{t} \bm{u}_{t} + \bm{q}_t, \quad \bm{q}_t \sim \mathcal{N}(\bm{0}, \mathbf{Q}_t), \qquad \forall t \in \{1, 2, \dots, T\}.
+\]
+Thus,
+\[
+    p(\bm{x}_t | \bm{x}_{t-1}, \bm{u}_{t}) = \mathcal{N}(\mathbf{F}_{t} \bm{x}_{t-1} + \mathbf{B}_{t} \bm{u}_{t}, \mathbf{Q}_t)
+\]
+
+Similarly, suppose that the observation model is also linear:
+\[
+    \bm{z}_t = \mathbf{H}_t \bm{x}_t + \bm{r}_t, \quad \bm{r}_t \sim \mathcal{N}(\bm{0}, \mathbf{R}_t), \qquad \forall t \in \{1, 2, \dots, T\}.
+\]
+Thus,
+\[
+    p(\bm{z}_t | \bm{x}_t) = \mathcal{N}(\mathbf{H}_t \bm{x}_t, \mathbf{R}_t)
+\]
+
+Suppose that the posterior state distribution at time $t-1$ is Gaussian:
+\[
+    p(\bm{x}_{t-1} | \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) = \mathcal{N}(\bm{\mu}_{t-1 | t-1}, \mathbf{\Sigma}_{t-1 | t-1}),
+\]
+where $\bm{\mu}_{t-1 | t-1}$ and $\mathbf{\Sigma}_{t-1 | t-1}$ denote the posterior mean and covariance of the state $\bm{x}_{t-1}$, respectively, based on all information available up to time $t-1$.
+
+Because a linear transformation of a Gaussian random variable remains Gaussian, the predictive distribution is
+\[
+    p(\bm{x}_{t} | \bm{z}_{1:t-1}, \bm{u}_{1:t}) = \mathcal{N}(\bm{\mu}_{t | t-1}, \mathbf{\Sigma}_{t | t-1}).
+\]
+
+Its mean is
+\[
+\begin{aligned}
+    \bm{\mu}_{t|t-1} & = \mathbb{E}[\bm{x}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}] \leftarrow \text{Definition of predictive mean} \\
+    & = \mathbb{E}[\mathbf{F}_t \bm{x}_{t-1} + \mathbf{B}_t \bm{u}_t + \bm{q}_t] \leftarrow \text{State transition model} \\
+    & = \mathbf{F}_t \mathbb{E}[\bm{x}_{t-1}] + \mathbf{B}_t \bm{u}_t + \mathbb{E}[\bm{q}_t] \leftarrow \text{Linearity of expectation} \\
+    & = \mathbf{F}_t \bm{\mu}_{t-1 | t-1} + \mathbf{B}_t \bm{u}_t \leftarrow \text{Zero-mean process noise},
+\end{aligned}
+\]
+and its covariance is
+\[
+\begin{aligned}
+    \mathbf{\Sigma}_{t | t-1} & = \mathrm{CoV}(\bm{x}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \leftarrow \text{Definition of predictive covariance} \\
+    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1} + \mathbf{B}_t \bm{u}_t + \bm{q}_t)\leftarrow \text{State transition model} \\
+    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1} + \bm{q}_t)\leftarrow \text{Deterministic control input} \\
+    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1}) + \mathrm{CoV}(\bm{q}_t) + \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1}, \bm{q}_t) + \mathrm{CoV}(\bm{q}_t, \mathbf{F}_t \bm{x}_{t-1})\leftarrow \text{Covariance of a sum} \\
+    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1}) + \mathrm{CoV}(\bm{q}_t)  \leftarrow \text{Independence of state and process noise} \\
+    & = \mathbf{F}_t \mathrm{CoV}(\bm{x}_{t-1}) \mathbf{F}_t^{\top} + \mathbf{Q}_{t} \leftarrow \text{Covariance under linear transformation} \\
+    & = \mathbf{F}_t \mathbf{\Sigma}_{t-1 | t-1} \mathbf{F}_t^{\top} + \mathbf{Q}_{t} \leftarrow \text{Previous posterior covariance}.
+\end{aligned}
+\]
+
+For the observation model, the difference between the actual and predicted observations is
+\[
+    \bm{\nu}_{t} = \bm{z}_t - \mathbf{H}_{t} \bm{\mu}_{t | t-1}.
+\]
+Before observing $\bm{z}_t$, this prediction error has zero mean:
+\[
+    \begin{aligned}
+        \mathbb{E}[\bm{\nu}_t] & = \mathbb{E}[\mathbf{H}_{t} \bm{x}_t + \bm{r}_t - \mathbf{H}_{t} \bm{\mu}_{t | t-1}] \\
+        & = \mathbf{H}_{t} \mathbb{E}[\bm{x}_t] + \mathbb{E}[\bm{r}_t] - \mathbf{H}_{t} \bm{\mu}_{t | t-1} \\ 
+        & = \mathbf{H}_{t} \bm{\mu}_{t | t-1} - \mathbf{H}_{t} \bm{\mu}_{t | t-1} = 0
+    \end{aligned}
+\]
+and covariance
+\[
+\begin{aligned}
+    \mathrm{CoV}(\bm{\nu}_{t}) & = \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t + \bm{r}_t - \mathbf{H}_{t} \bm{\mu}_{t | t-1}) \\
+    & = \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t + \bm{r}_t) \\
+    & = \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t) + \mathrm{CoV}(\bm{r}_t) + \mathrm{CoV}(\bm{r}_t, \mathbf{H}_{t} \bm{x}_t) + \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t, \bm{r}_t) \\
+    & = \mathbf{H}_{t} \mathrm{CoV}(\bm{x}_t) \mathbf{H}_{t}^{\top} + \mathbf{R}_t \\
+    & = \underbrace{\mathbf{H}_{t} \mathbf{\Sigma}_{t | t-1} \mathbf{H}_{t}^{\top}}_{\text{uncertainty in predicted state}} + \underbrace{\mathbf{R}_t}_{\text{observation noise}}.
+\end{aligned}
+\]
+
+Since the predicted state and the observation are jointly Gaussian, 
+conditioning on the new observation $\bm{z}_t$ gives the posterior state distribution
+\[
+    p(\bm{x}_t  |  \bm{z}_{1:t}, \bm{u}_{1:t})=\mathcal{N}\left(\bm{\mu}_{t  |  t},\mathbf{\Sigma}_{t  |  t}\right),
+\]
+where
+\[
+\begin{aligned}
+    \bm{\mu}_{t |  t} &= \mathbb{E}[\bm{x}_t | \bm{z}_t] \leftarrow \text{Definition of conditional mean} \\
+    &= \bm{\mu}_{t |  t-1} + \mathrm{Cov}(\bm{x}_t,\bm{z}_t) \mathrm{Cov}(\bm{z}_t)^{-1} \left( \bm{z}_t-\mathbb{E}[\bm{z}_t] \right) \leftarrow \text{Conditional Gaussian formula} \\
+    & = \underbrace{\bm{\mu}_{t |  t-1}}_{\text{predicted mean}} + \underbrace{\mathbf{\Sigma}_{t |  t-1} \mathbf{H}_t^{\top} \left( \mathbf{H}_t \mathbf{\Sigma}_{t |  t-1} \mathbf{H}_t^{\top} + \mathbf{R}_t \right)^{-1}}_{\text{uncertainty-dependent correction}} \underbrace{\left( \bm{z}_t - \mathbf{H}_t \bm{\mu}_{t |  t-1} \right) }_{\text{observation prediction error}} \leftarrow \text{Substitution of mean and covariance}.
+\end{aligned}
+\]
+and
+\[
+\begin{aligned}
+    \mathbf{\Sigma}_{t |  t}
+    &= \mathrm{Cov}(\bm{x}_t | \bm{z}_t) \leftarrow \text{Definition of conditional covariance}
+    \\
+    &= \mathbf{\Sigma}_{t |  t-1} - \mathrm{Cov}(\bm{x}_t,\bm{z}_t) \mathrm{Cov}(\bm{z}_t)^{-1} \mathrm{Cov}(\bm{z}_t,\bm{x}_t) \leftarrow \text{Conditional Gaussian formula} \\
+    &=\mathbf{\Sigma}_{t |  t-1}-\mathbf{\Sigma}_{t |  t-1}\mathbf{H}_t^{\top}\left(\mathbf{H}_t\mathbf{\Sigma}_{t |  t-1}\mathbf{H}_t^{\top}+\mathbf{R}_t\right)^{-1}\mathbf{H}_t\mathbf{\Sigma}_{t |  t-1} \leftarrow \text{Substitution of covariance terms}.
+\end{aligned}
+\]
+
+Therefore, the new observation corrects the predicted state according to 
+the discrepancy between the actual and predicted observations, while the 
+magnitude of the correction depends on both the uncertainty of the state 
+prediction and the observation noise.
 
 \end{document}
