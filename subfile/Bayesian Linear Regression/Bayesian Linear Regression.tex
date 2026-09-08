@@ -62,7 +62,7 @@ For the entire dataset, the linear regression model can therefore be written as
 \]
 Consequently,
 \[
-    p(\bm{y} | \mathbf{X}, \bm{w}) \sim \mathcal{N}(\mathbf{X}\bm{w}, \sigma \mathbf{I}_N).
+    p(\bm{y} | \mathbf{X}, \bm{w}) \sim \mathcal{N}(\mathbf{X}\bm{w}, \sigma^2 \mathbf{I}_N).
 \]
 
 Bayesian method includes two basic steps: inference and prediction, where inference is to estimate posterior $\bm{w}$, while prediction is to predict ${y}^{*}$ given $\bm{x}^{*}$.
@@ -102,19 +102,86 @@ where $\mathbf{\Sigma}_p\in\mathbb{R}^{p\times p}$ denotes the prior covariance 
 
 Since both the likelihood and the prior are Gaussian, their conjugacy implies that the posterior distribution of $\bm{w}$ is also Gaussian:
 \[
-    p(\bm{w} | \mathbf{X}, \bm{y}) = \mathcal{N}(\mu_w, \Sigma_w)
+    p(\bm{w} | \mathbf{X}, \bm{y}) = \mathcal{N}(\bm{\mu}_{\bm{w}}, \mathbf{\Sigma}_{\bm{w}})
 \]
 Thus,
 \[
-    p(\bm{w} | \mathbf{X}, \bm{y}) \propto \mathcal{N}(\mathbf{X}\bm{w}, \sigma \mathbf{I}_N) \mathcal{N}\left(\bm{0}, \mathbf{\Sigma}_{p}\right).
+    p(\bm{w} | \mathbf{X}, \bm{y}) \propto \mathcal{N}(\mathbf{X}\bm{w}, \sigma^2 \mathbf{I}_N) \mathcal{N}\left(\bm{0}, \mathbf{\Sigma}_{p}\right).
 \]
 
 The remaining task is therefore to derive the posterior mean $\bm{\mu}_w$ and posterior covariance $\mathbf{\Sigma}_w$.
 
 \subsection{Model Solution}
 
+To derive the posterior distribution, we first write the product of the likelihood and the prior explicitly:
+\[
+    \mathcal{N}(\mathbf{X}\bm{w}, \sigma \mathbf{I}_N) \mathcal{N}\left(\bm{0}, \mathbf{\Sigma}_{p}\right) = 
+    \frac{1}{(2\pi)^{N/2} \sigma^{N}}\exp\left(-\frac{1}{2\sigma^{2}}  (\bm{y} - \mathbf{X}\bm{w})^{\top} (\bm{y} - \mathbf{X}\bm{w}) \right) \frac{1}{(2\pi)^{p/2} |\mathbf{\Sigma}_{p}|^{1/2}}\exp\left(-\frac{1}{2} (\bm{w})^{\top} \mathbf{\Sigma}_{p}^{-1} \bm{w} \right).
+\]
+
+Thus, 
+\[
+\begin{aligned}
+    p(\bm{w} | \mathbf{X}, \bm{y}) \propto & \exp\left(-\frac{1}{2\sigma^{2}}  (\bm{y} - \mathbf{X}\bm{w})^{\top} (\bm{y} - \mathbf{X}\bm{w}) -\frac{1}{2} (\bm{w})^{\top} \mathbf{\Sigma}_{p}^{-1} \bm{w}\right) \\
+    & = \exp\left(-\frac{1}{2\sigma^{2}} \left(\bm{y}^{\top} \bm{y} \textcolor{green}{- \bm{y}^{\top} \mathbf{X}\bm{w}} \textcolor{green}{- \bm{w}^{\top} \mathbf{X}^{\top} \bm{y}} \textcolor{blue}{+ \bm{w}^{\top} \mathbf{X}^{\top} \mathbf{X} \bm{w}}\right) - \frac{1}{2} \textcolor{blue}{(\bm{w})^{\top} \mathbf{\Sigma}_{p}^{-1} \bm{w}} \right) \\
+    & = \exp\left( -\frac{1}{2\sigma^{2}} \bm{y}^{\top} \bm{y} + \frac{1}{\sigma^{2}} \bm{w}^{\top} \mathbf{X}^{\top} \bm{y} - \frac{1}{2} \bm{w}^{\top} \left(\frac{1}{\sigma^{2}} \mathbf{X}^{\top} \mathbf{X} + \mathbf{\Sigma}_{p}^{-1}\right) \bm{w} \right).
+\end{aligned}
+\]
+
+Comparing this expression with the kernel of a multivariate Gaussian distribution,
+\[
+    \exp\left(-\frac{1}{2} (\bm{w} - \bm{\mu}_{\bm{w}})^{\top} \mathbf{\Sigma}_{\bm{w}}^{-1} (\bm{w} - \bm{\mu}_{\bm{w}}) \right) = 
+    \exp\left( -\frac{1}{2} \bm{w}^{\top} \mathbf{\Sigma}_{\bm{w}}^{-1} \bm{w} + \bm{w}^{\top} \mathbf{\Sigma}_{\bm{w}}^{-1} \bm{\mu}_{\bm{w}} - \frac{1}{2} \bm{\mu}_{\bm{w}}^{\top} \mathbf{\Sigma}_{\bm{w}}^{-1} \bm{\mu}_{\bm{w}} \right),
+\]
+we obtain
+\[
+    \mathbf{\Sigma}_{\bm{w}}^{-1} = \frac{1}{\sigma^{2}} \mathbf{X}^{\top} \mathbf{X} + \mathbf{\Sigma}_{p}^{-1} = \mathbf{A}.
+\]
+
+Matching the linear terms gives
+\[
+    \bm{w}^{\top} \mathbf{\Sigma}_{\bm{w}}^{-1} \bm{\mu}_{\bm{w}} = \frac{1}{\sigma^{2}} \bm{w}^{\top} \mathbf{X}^{\top} \bm{y} \Leftrightarrow \mathbf{A} \bm{\mu}_{\bm{w}} = \frac{1}{\sigma^{2}} \mathbf{X}^{\top} \bm{y},
+\]
+and therefore
+\[
+    \bm{\mu}_{\bm{w}} = \frac{1}{\sigma^{2}} \mathbf{A}^{-1} \mathbf{X}^{\top} \bm{y}.
+\]
+
+Hence, the posterior distribution has the closed-form solution
+\[
+    p(\bm{w} | \mathbf{X}, \bm{y}) \sim \mathcal{N}(\bm{\mu}_{\bm{w}}, \mathbf{\Sigma}_{\bm{w}}),
+\]
+where 
+\[
+    \mathbf{\Sigma}_{\bm{w}}^{-1} = \frac{1}{\sigma^{2}} \mathbf{X}^{\top} \mathbf{X} + \mathbf{\Sigma}_{p}^{-1}, \qquad \bm{\mu}_{\bm{w}} = \frac{1}{\sigma^{2}} \mathbf{\Sigma}_{\bm{w}} \mathbf{X}^{\top} \bm{y}.
+\]
 
 
 \section{Prediction}
+
+After obtaining the posterior distribution of the coefficient vector, Bayesian linear regression can be used to predict the responses associated with new observations.
+
+Let $\mathbf{X}^{*}\in\mathbb{R}^{N^{*}\times p}$ denote the design matrix for $N^{*}$ new observations, and let $\bm{y}^{*}\in\mathbb{R}^{N^{*}}$ denote the corresponding target vector to be predicted.
+
+Given the posterior distribution, the posterior predictive distribution is obtained by marginalizing over the uncertainty in $\bm{w}$:
+\[
+    p(\bm{y}^{*}\mid\mathbf{X}^{*},\mathcal{D}) = \int p(\bm{y}^{*}\mid\mathbf{X}^{*},\bm{w})p(\bm{w}\mid\mathcal{D})\mathrm{d}\bm{w}.
+\]
+
+Thus, we have 
+\[
+    p(\bm{y}^{*}\mid\mathbf{X}^{*},\mathcal{D}) = \mathcal{N}\left(\mathbf{X}^{*}\bm{\mu}_{\bm{w}}, \mathbf{X}^{*}\mathbf{\Sigma}_{w}(\mathbf{X}^{*})^{\top} + \sigma^{2}\mathbf{I}_{N^{*}} \right).
+\]
+
+Therefore, the predictive mean and covariance are
+\[
+    \mathbb{E}\left[\bm{y}^{*}\mid\mathbf{X}^{*},\mathcal{D}\right]=\mathbf{X}^{*}\bm{\mu}_{w},
+\]
+and
+\[
+    \operatorname{Cov}\left(\bm{y}^{*}\mid\mathbf{X}^{*},\mathcal{D}\right)=\underbrace{\mathbf{X}^{*}\mathbf{\Sigma}_{w}(\mathbf{X}^{*})^{\top}}_{\text{parameter uncertainty}} + \underbrace{\sigma^{2}\mathbf{I}_{N^{*}}}_{\text{observation noise}}.
+\]
+
+
 
 \end{document}

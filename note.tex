@@ -56,16 +56,16 @@
 \newtheoremstyle{prostyle}{3pt}{3pt}{\itshape}{-3pt}{
   \bfseries\color{third}}{}{0.5em}{\indent[\thmname{#1} \thmnumber{#2}] \thmnote{(#3)}}
 
-\theoremstyle{thmstyle} % theorem style
-  \newtheorem{theorem}{Theorem}[chapter]
-  \newtheorem{AIprompt}[theorem]{AI Prompt}
-\theoremstyle{defstyle} % definition style
-  \newtheorem{definition}[theorem]{Definition}
-  \newtheorem{lemma}[theorem]{Lemma}
-  \newtheorem{corollary}[theorem]{Corollary}
-\theoremstyle{prostyle} % proposition style
-  \newtheorem{proposition}[theorem]{Proposition}
-  \newtheorem{example}[theorem]{Example}
+% \theoremstyle{thmstyle} % theorem style
+%   \newtheorem{theorem}{Theorem}[chapter]
+%   \newtheorem{AIprompt}[theorem]{AI Prompt}
+% \theoremstyle{defstyle} % definition style
+%   \newtheorem{definition}[theorem]{Definition}
+%   \newtheorem{lemma}[theorem]{Lemma}
+%   \newtheorem{corollary}[theorem]{Corollary}
+% \theoremstyle{prostyle} % proposition style
+%   \newtheorem{proposition}[theorem]{Proposition}
+%   \newtheorem{example}[theorem]{Example}
 
 \renewenvironment{proof}[1][Proof]{\par{\itshape \uline{\textbf{#1.}}} \;}{\qed\par}
 \newenvironment{solution}{\par\underline{\textbf{Solution.}} \;\itshape}{\par}
