@@ -91,112 +91,738 @@ and $\mathrm{bel}(x_0)$ = $p(\bm{x}_0)$.
 
 The Bayesian filter therefore provides a recursive update approach to calculate belief tractably consisting of two steps: prediction, which propagates the previous belief through the state transition model, and correction, which incorporates the latest observation through the observation model.
 
-
 \section{Kalman Filter}
 
-The Kalman filter is a special case of the Bayesian filter, in which the system is assumed to be linear and all uncertainties are modeled as Gaussian.
+The Kalman filter is a special case of the Bayesian filter in which the state transition and observation models are linear and all uncertainties are Gaussian.
 
-Suppose that the state transition $\bm{x}_t$ is linear in previous state $\bm{x}_{t-1}$ and control input $\bm{u}_t$, i.e.,
-\[
-    \bm{x}_t = \mathbf{F}_{t} \bm{x}_{t-1} + \mathbf{B}_{t} \bm{u}_{t} + \bm{q}_t, \quad \bm{q}_t \sim \mathcal{N}(\bm{0}, \mathbf{Q}_t), \qquad \forall t \in \{1, 2, \dots, T\}.
-\]
-Thus,
-\[
-    p(\bm{x}_t | \bm{x}_{t-1}, \bm{u}_{t}) = \mathcal{N}(\mathbf{F}_{t} \bm{x}_{t-1} + \mathbf{B}_{t} \bm{u}_{t}, \mathbf{Q}_t)
-\]
+\subsection{Prediction Step}
 
-Similarly, suppose that the observation model is also linear:
+Suppose that the state transition is linear in the previous state $\bm{x}_{t-1}$ and control input $\bm{u}_t$:
 \[
-    \bm{z}_t = \mathbf{H}_t \bm{x}_t + \bm{r}_t, \quad \bm{r}_t \sim \mathcal{N}(\bm{0}, \mathbf{R}_t), \qquad \forall t \in \{1, 2, \dots, T\}.
+    \bm{x}_t
+    =
+    \mathbf{F}_{t}\bm{x}_{t-1}
+    +
+    \mathbf{B}_{t}\bm{u}_{t}
+    +
+    \bm{q}_t,
+    \qquad
+    \bm{q}_t
+    \sim
+    \mathcal{N}(\bm{0},\mathbf{Q}_t),
+    \qquad
+    t\in\{1,\dots,T\}.
 \]
-Thus,
+Assume that the process noise $\bm{q}_t$ is independent of the previous state. Then
 \[
-    p(\bm{z}_t | \bm{x}_t) = \mathcal{N}(\mathbf{H}_t \bm{x}_t, \mathbf{R}_t)
+    p(\bm{x}_t\mid\bm{x}_{t-1},\bm{u}_t)
+    =
+    \mathcal{N}
+    \left(
+        \mathbf{F}_t\bm{x}_{t-1}
+        +
+        \mathbf{B}_t\bm{u}_t,
+        \mathbf{Q}_t
+    \right).
 \]
 
 Suppose that the posterior state distribution at time $t-1$ is Gaussian:
 \[
-    p(\bm{x}_{t-1} | \bm{z}_{1:t-1}, \bm{u}_{1:t-1}) = \mathcal{N}(\bm{\mu}_{t-1 | t-1}, \mathbf{\Sigma}_{t-1 | t-1}),
+    p(
+        \bm{x}_{t-1}
+        \mid
+        \bm{z}_{1:t-1},
+        \bm{u}_{1:t-1}
+    )
+    =
+    \mathcal{N}
+    \left(
+        \bm{\mu}_{t-1\mid t-1},
+        \mathbf{\Sigma}_{t-1\mid t-1}
+    \right),
 \]
-where $\bm{\mu}_{t-1 | t-1}$ and $\mathbf{\Sigma}_{t-1 | t-1}$ denote the posterior mean and covariance of the state $\bm{x}_{t-1}$, respectively, based on all information available up to time $t-1$.
+where $\bm{\mu}_{t-1\mid t-1}$ and $\mathbf{\Sigma}_{t-1\mid t-1}$ denote the posterior mean and covariance based on all information available up to time $t-1$.
 
-Because a linear transformation of a Gaussian random variable remains Gaussian, the predictive distribution is
+The prediction step of the Bayesian filter is
 \[
-    p(\bm{x}_{t} | \bm{z}_{1:t-1}, \bm{u}_{1:t}) = \mathcal{N}(\bm{\mu}_{t | t-1}, \mathbf{\Sigma}_{t | t-1}).
+\begin{aligned}
+    p(
+        \bm{x}_t
+        \mid
+        \bm{z}_{1:t-1},
+        \bm{u}_{1:t}
+    )
+    &=
+    \int
+    p(
+        \bm{x}_t
+        \mid
+        \bm{x}_{t-1},
+        \bm{u}_t
+    )
+    p(
+        \bm{x}_{t-1}
+        \mid
+        \bm{z}_{1:t-1},
+        \bm{u}_{1:t-1}
+    )
+    \,d\bm{x}_{t-1}.
+\end{aligned}
+\]
+
+Since $\bm{x}_{t-1}$ and the independent process noise $\bm{q}_t$ are Gaussian, and $\bm{x}_t$ is an affine transformation of them, the predictive distribution is also Gaussian:
+\[
+    p(
+        \bm{x}_t
+        \mid
+        \bm{z}_{1:t-1},
+        \bm{u}_{1:t}
+    )
+    =
+    \mathcal{N}
+    \left(
+        \bm{\mu}_{t\mid t-1},
+        \mathbf{\Sigma}_{t\mid t-1}
+    \right).
 \]
 
 Its mean is
 \[
 \begin{aligned}
-    \bm{\mu}_{t|t-1} & = \mathbb{E}[\bm{x}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}] \leftarrow \text{Definition of predictive mean} \\
-    & = \mathbb{E}[\mathbf{F}_t \bm{x}_{t-1} + \mathbf{B}_t \bm{u}_t + \bm{q}_t] \leftarrow \text{State transition model} \\
-    & = \mathbf{F}_t \mathbb{E}[\bm{x}_{t-1}] + \mathbf{B}_t \bm{u}_t + \mathbb{E}[\bm{q}_t] \leftarrow \text{Linearity of expectation} \\
-    & = \mathbf{F}_t \bm{\mu}_{t-1 | t-1} + \mathbf{B}_t \bm{u}_t \leftarrow \text{Zero-mean process noise},
-\end{aligned}
-\]
-and its covariance is
-\[
-\begin{aligned}
-    \mathbf{\Sigma}_{t | t-1} & = \mathrm{CoV}(\bm{x}_t | \bm{z}_{1:t-1}, \bm{u}_{1:t}) \leftarrow \text{Definition of predictive covariance} \\
-    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1} + \mathbf{B}_t \bm{u}_t + \bm{q}_t)\leftarrow \text{State transition model} \\
-    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1} + \bm{q}_t)\leftarrow \text{Deterministic control input} \\
-    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1}) + \mathrm{CoV}(\bm{q}_t) + \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1}, \bm{q}_t) + \mathrm{CoV}(\bm{q}_t, \mathbf{F}_t \bm{x}_{t-1})\leftarrow \text{Covariance of a sum} \\
-    & = \mathrm{CoV}(\mathbf{F}_t \bm{x}_{t-1}) + \mathrm{CoV}(\bm{q}_t)  \leftarrow \text{Independence of state and process noise} \\
-    & = \mathbf{F}_t \mathrm{CoV}(\bm{x}_{t-1}) \mathbf{F}_t^{\top} + \mathbf{Q}_{t} \leftarrow \text{Covariance under linear transformation} \\
-    & = \mathbf{F}_t \mathbf{\Sigma}_{t-1 | t-1} \mathbf{F}_t^{\top} + \mathbf{Q}_{t} \leftarrow \text{Previous posterior covariance}.
+    \bm{\mu}_{t\mid t-1}
+    &=
+    \mathbb{E}
+    [
+        \bm{x}_t
+        \mid
+        \bm{z}_{1:t-1},
+        \bm{u}_{1:t}
+    ]
+    &&\leftarrow
+    \text{Definition of predictive mean}
+    \\
+    &=
+    \mathbb{E}
+    [
+        \mathbf{F}_t\bm{x}_{t-1}
+        +
+        \mathbf{B}_t\bm{u}_t
+        +
+        \bm{q}_t
+    ]
+    &&\leftarrow
+    \text{State transition model}
+    \\
+    &=
+    \mathbf{F}_t
+    \mathbb{E}[\bm{x}_{t-1}]
+    +
+    \mathbf{B}_t\bm{u}_t
+    +
+    \mathbb{E}[\bm{q}_t]
+    &&\leftarrow
+    \text{Linearity of expectation}
+    \\
+    &=
+    \mathbf{F}_t
+    \bm{\mu}_{t-1\mid t-1}
+    +
+    \mathbf{B}_t\bm{u}_t
+    &&\leftarrow
+    \text{Zero-mean process noise}.
 \end{aligned}
 \]
 
-For the observation model, the difference between the actual and predicted observations is
-\[
-    \bm{\nu}_{t} = \bm{z}_t - \mathbf{H}_{t} \bm{\mu}_{t | t-1}.
-\]
-Before observing $\bm{z}_t$, this prediction error has zero mean:
-\[
-    \begin{aligned}
-        \mathbb{E}[\bm{\nu}_t] & = \mathbb{E}[\mathbf{H}_{t} \bm{x}_t + \bm{r}_t - \mathbf{H}_{t} \bm{\mu}_{t | t-1}] \\
-        & = \mathbf{H}_{t} \mathbb{E}[\bm{x}_t] + \mathbb{E}[\bm{r}_t] - \mathbf{H}_{t} \bm{\mu}_{t | t-1} \\ 
-        & = \mathbf{H}_{t} \bm{\mu}_{t | t-1} - \mathbf{H}_{t} \bm{\mu}_{t | t-1} = 0
-    \end{aligned}
-\]
-and covariance
+Its covariance is
 \[
 \begin{aligned}
-    \mathrm{CoV}(\bm{\nu}_{t}) & = \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t + \bm{r}_t - \mathbf{H}_{t} \bm{\mu}_{t | t-1}) \\
-    & = \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t + \bm{r}_t) \\
-    & = \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t) + \mathrm{CoV}(\bm{r}_t) + \mathrm{CoV}(\bm{r}_t, \mathbf{H}_{t} \bm{x}_t) + \mathrm{CoV}(\mathbf{H}_{t} \bm{x}_t, \bm{r}_t) \\
-    & = \mathbf{H}_{t} \mathrm{CoV}(\bm{x}_t) \mathbf{H}_{t}^{\top} + \mathbf{R}_t \\
-    & = \underbrace{\mathbf{H}_{t} \mathbf{\Sigma}_{t | t-1} \mathbf{H}_{t}^{\top}}_{\text{uncertainty in predicted state}} + \underbrace{\mathbf{R}_t}_{\text{observation noise}}.
+    \mathbf{\Sigma}_{t\mid t-1}
+    &=
+    \operatorname{Cov}
+    \left(
+        \bm{x}_t
+        \mid
+        \bm{z}_{1:t-1},
+        \bm{u}_{1:t}
+    \right)
+    &&\leftarrow
+    \text{Definition of predictive covariance}
+    \\
+    &=
+    \operatorname{Cov}
+    \left(
+        \mathbf{F}_t\bm{x}_{t-1}
+        +
+        \mathbf{B}_t\bm{u}_t
+        +
+        \bm{q}_t
+    \right)
+    &&\leftarrow
+    \text{State transition model}
+    \\
+    &=
+    \operatorname{Cov}
+    \left(
+        \mathbf{F}_t\bm{x}_{t-1}
+        +
+        \bm{q}_t
+    \right)
+    &&\leftarrow
+    \text{Deterministic control input}
+    \\
+    &=
+    \operatorname{Cov}
+    \left(
+        \mathbf{F}_t\bm{x}_{t-1}
+    \right)
+    +
+    \operatorname{Cov}(\bm{q}_t)
+    &&\leftarrow
+    \text{Independence of state and process noise}
+    \\
+    &=
+    \mathbf{F}_t
+    \operatorname{Cov}(\bm{x}_{t-1})
+    \mathbf{F}_t^\top
+    +
+    \mathbf{Q}_t
+    &&\leftarrow
+    \text{Covariance under linear transformation}
+    \\
+    &=
+    \mathbf{F}_t
+    \mathbf{\Sigma}_{t-1\mid t-1}
+    \mathbf{F}_t^\top
+    +
+    \mathbf{Q}_t.
 \end{aligned}
 \]
 
-Since the predicted state and the observation are jointly Gaussian, 
-conditioning on the new observation $\bm{z}_t$ gives the posterior state distribution
+Therefore, the prediction step of the Kalman filter is
 \[
-    p(\bm{x}_t  |  \bm{z}_{1:t}, \bm{u}_{1:t})=\mathcal{N}\left(\bm{\mu}_{t  |  t},\mathbf{\Sigma}_{t  |  t}\right),
-\]
-where
-\[
-\begin{aligned}
-    \bm{\mu}_{t |  t} &= \mathbb{E}[\bm{x}_t | \bm{z}_t] \leftarrow \text{Definition of conditional mean} \\
-    &= \bm{\mu}_{t |  t-1} + \mathrm{Cov}(\bm{x}_t,\bm{z}_t) \mathrm{Cov}(\bm{z}_t)^{-1} \left( \bm{z}_t-\mathbb{E}[\bm{z}_t] \right) \leftarrow \text{Conditional Gaussian formula} \\
-    & = \underbrace{\bm{\mu}_{t |  t-1}}_{\text{predicted mean}} + \underbrace{\mathbf{\Sigma}_{t |  t-1} \mathbf{H}_t^{\top} \left( \mathbf{H}_t \mathbf{\Sigma}_{t |  t-1} \mathbf{H}_t^{\top} + \mathbf{R}_t \right)^{-1}}_{\text{uncertainty-dependent correction}} \underbrace{\left( \bm{z}_t - \mathbf{H}_t \bm{\mu}_{t |  t-1} \right) }_{\text{observation prediction error}} \leftarrow \text{Substitution of mean and covariance}.
-\end{aligned}
+    {
+        \bm{\mu}_{t\mid t-1}
+        =
+        \mathbf{F}_t
+        \bm{\mu}_{t-1\mid t-1}
+        +
+        \mathbf{B}_t\bm{u}_t
+    }
 \]
 and
 \[
+    {
+        \mathbf{\Sigma}_{t\mid t-1}
+        =
+        \mathbf{F}_t
+        \mathbf{\Sigma}_{t-1\mid t-1}
+        \mathbf{F}_t^\top
+        +
+        \mathbf{Q}_t
+    }.
+\]
+
+\subsection{Correction Step}
+
+Suppose that the observation model is also linear:
+\[
+    \bm{z}_t
+    =
+    \mathbf{H}_t\bm{x}_t
+    +
+    \bm{r}_t,
+    \qquad
+    \bm{r}_t
+    \sim
+    \mathcal{N}(\bm{0},\mathbf{R}_t),
+    \qquad
+    t\in\{1,\dots,T\},
+\]
+where the observation noise $\bm{r}_t$ is independent of the state $\bm{x}_t$. Thus,
+\[
+    p(\bm{z}_t\mid\bm{x}_t)
+    =
+    \mathcal{N}
+    \left(
+        \mathbf{H}_t\bm{x}_t,
+        \mathbf{R}_t
+    \right).
+\]
+
+In the following correction-step derivation, all expectations, covariances, and distributions involving $\bm{x}_t$ and $\bm{z}_t$ are implicitly conditioned on the information available before observing $\bm{z}_t$, namely
+\[
+    (\bm{z}_{1:t-1},\bm{u}_{1:t}),
+\]
+and this conditioning is suppressed when no ambiguity arises.
+
+We first show that the predicted state $\bm{x}_t$ and the observation $\bm{z}_t$ are jointly Gaussian. From the observation model,
+\[
+    \begin{bmatrix}
+        \bm{x}_t\\
+        \bm{z}_t
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \bm{x}_t\\
+        \mathbf{H}_t\bm{x}_t+\bm{r}_t
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        \mathbf{I} & \mathbf{0}\\
+        \mathbf{H}_t & \mathbf{I}
+    \end{bmatrix}
+    \begin{bmatrix}
+        \bm{x}_t\\
+        \bm{r}_t
+    \end{bmatrix}.
+\]
+
+Before observing $\bm{z}_t$,
+\[
+    \bm{x}_t
+    \sim
+    \mathcal{N}
+    \left(
+        \bm{\mu}_{t\mid t-1},
+        \mathbf{\Sigma}_{t\mid t-1}
+    \right),
+\]
+and
+\[
+    \bm{r}_t
+    \sim
+    \mathcal{N}
+    \left(
+        \bm{0},
+        \mathbf{R}_t
+    \right).
+\]
+
+Since $\bm{x}_t$ and $\bm{r}_t$ are independent Gaussian random vectors,
+\[
+    \begin{bmatrix}
+        \bm{x}_t\\
+        \bm{r}_t
+    \end{bmatrix}
+    \sim
+    \mathcal{N}
+    \left(
+        \begin{bmatrix}
+            \bm{\mu}_{t\mid t-1}\\
+            \bm{0}
+        \end{bmatrix},
+        \begin{bmatrix}
+            \mathbf{\Sigma}_{t\mid t-1} & \mathbf{0}\\
+            \mathbf{0} & \mathbf{R}_t
+        \end{bmatrix}
+    \right).
+\]
+
+Because a linear transformation of a Gaussian random vector remains Gaussian, $\bm{x}_t$ and $\bm{z}_t$ are jointly Gaussian.
+
+The predicted-state mean is
+\[
+    \bm{\mu}_{\bm{x}t}
+    =
+    \mathbb{E}[\bm{x}_t]
+    =
+    \bm{\mu}_{t\mid t-1}.
+\]
+
+The predicted observation mean is
+\[
 \begin{aligned}
-    \mathbf{\Sigma}_{t |  t}
-    &= \mathrm{Cov}(\bm{x}_t | \bm{z}_t) \leftarrow \text{Definition of conditional covariance}
+    \bm{\mu}_{\bm{z}t}
+    &=
+    \mathbb{E}[\bm{z}_t]
     \\
-    &= \mathbf{\Sigma}_{t |  t-1} - \mathrm{Cov}(\bm{x}_t,\bm{z}_t) \mathrm{Cov}(\bm{z}_t)^{-1} \mathrm{Cov}(\bm{z}_t,\bm{x}_t) \leftarrow \text{Conditional Gaussian formula} \\
-    &=\mathbf{\Sigma}_{t |  t-1}-\mathbf{\Sigma}_{t |  t-1}\mathbf{H}_t^{\top}\left(\mathbf{H}_t\mathbf{\Sigma}_{t |  t-1}\mathbf{H}_t^{\top}+\mathbf{R}_t\right)^{-1}\mathbf{H}_t\mathbf{\Sigma}_{t |  t-1} \leftarrow \text{Substitution of covariance terms}.
+    &=
+    \mathbb{E}
+    \left[
+        \mathbf{H}_t\bm{x}_t+\bm{r}_t
+    \right]
+    \\
+    &=
+    \mathbf{H}_t
+    \mathbb{E}[\bm{x}_t]
+    +
+    \mathbb{E}[\bm{r}_t]
+    \\
+    &=
+    {
+        \mathbf{H}_t
+        \bm{\mu}_{t\mid t-1}
+    }.
 \end{aligned}
 \]
 
-Therefore, the new observation corrects the predicted state according to 
-the discrepancy between the actual and predicted observations, while the 
-magnitude of the correction depends on both the uncertainty of the state 
-prediction and the observation noise.
+The predicted-state covariance is
+\[
+    \mathbf{\Sigma}_{\bm{x}\bm{x}t}
+    =
+    \operatorname{Cov}(\bm{x}_t)
+    =
+    \mathbf{\Sigma}_{t\mid t-1}.
+\]
+
+The cross-covariance between the state and the observation is
+\[
+\begin{aligned}
+    \mathbf{\Sigma}_{\bm{x}\bm{z}t}
+    &=
+    \operatorname{Cov}(\bm{x}_t,\bm{z}_t)
+    \\
+    &=
+    \operatorname{Cov}
+    \left(
+        \bm{x}_t,
+        \mathbf{H}_t\bm{x}_t+\bm{r}_t
+    \right)
+    \\
+    &=
+    \operatorname{Cov}
+    \left(
+        \bm{x}_t,
+        \mathbf{H}_t\bm{x}_t
+    \right)
+    +
+    \underbrace{
+        \operatorname{Cov}(\bm{x}_t,\bm{r}_t)
+    }_{=\mathbf{0}}
+    \\
+    &=
+    \operatorname{Cov}(\bm{x}_t)
+    \mathbf{H}_t^\top
+    \\
+    &=
+    {
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+    }.
+\end{aligned}
+\]
+
+Similarly,
+\[
+    {
+        \mathbf{\Sigma}_{\bm{z}\bm{x}t}
+        =
+        \mathbf{H}_t
+        \mathbf{\Sigma}_{t\mid t-1}
+    }.
+\]
+
+Finally, the observation covariance is
+\[
+\begin{aligned}
+    \mathbf{\Sigma}_{\bm{z}\bm{z}t}
+    &=
+    \operatorname{Cov}(\bm{z}_t)
+    \\
+    &=
+    \operatorname{Cov}
+    \left(
+        \mathbf{H}_t\bm{x}_t+\bm{r}_t
+    \right)
+    \\
+    &=
+    \mathbf{H}_t
+    \operatorname{Cov}(\bm{x}_t)
+    \mathbf{H}_t^\top
+    +
+    \operatorname{Cov}(\bm{r}_t)
+    \\
+    &=
+    {
+        \mathbf{H}_t
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+        +
+        \mathbf{R}_t
+    }.
+\end{aligned}
+\]
+
+Therefore,
+\[
+    {
+    \begin{bmatrix}
+        \bm{x}_t\\
+        \bm{z}_t
+    \end{bmatrix}
+    \sim
+    \mathcal{N}
+    \left(
+        \begin{bmatrix}
+            \bm{\mu}_{t\mid t-1}\\
+            \mathbf{H}_t\bm{\mu}_{t\mid t-1}
+        \end{bmatrix},
+        \begin{bmatrix}
+            \mathbf{\Sigma}_{t\mid t-1}
+            &
+            \mathbf{\Sigma}_{t\mid t-1}\mathbf{H}_t^\top
+            \\
+            \mathbf{H}_t\mathbf{\Sigma}_{t\mid t-1}
+            &
+            \mathbf{H}_t
+            \mathbf{\Sigma}_{t\mid t-1}
+            \mathbf{H}_t^\top
+            +
+            \mathbf{R}_t
+        \end{bmatrix}
+    \right).
+    }
+\]
+
+The difference between the actual observation and its predicted mean is called the \emph{innovation}:
+\[
+    {
+        \bm{\nu}_t
+        :=
+        \bm{z}_t
+        -
+        \mathbb{E}[\bm{z}_t]
+        =
+        \bm{z}_t
+        -
+        \mathbf{H}_t
+        \bm{\mu}_{t\mid t-1}
+    }.
+\]
+
+Before observing $\bm{z}_t$, the innovation has zero mean:
+\[
+\begin{aligned}
+    \mathbb{E}[\bm{\nu}_t]
+    &=
+    \mathbb{E}
+    \left[
+        \bm{z}_t
+        -
+        \mathbb{E}[\bm{z}_t]
+    \right]
+    \\
+    &=
+    \bm{0}.
+\end{aligned}
+\]
+
+Its covariance is
+\[
+\begin{aligned}
+    \operatorname{Cov}(\bm{\nu}_t)
+    &=
+    \operatorname{Cov}(\bm{z}_t)
+    \\
+    &=
+    \mathbf{H}_t
+    \mathbf{\Sigma}_{t\mid t-1}
+    \mathbf{H}_t^\top
+    +
+    \mathbf{R}_t.
+\end{aligned}
+\]
+
+We define the \emph{innovation covariance}
+\[
+    {
+        \mathbf{S}_t
+        :=
+        \mathbf{H}_t
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+        +
+        \mathbf{R}_t
+    }.
+\]
+
+The two terms in $\mathbf{S}_t$ have distinct interpretations:
+\[
+    \underbrace{
+        \mathbf{H}_t
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+    }_{\text{uncertainty in the predicted observation}}
+    +
+    \underbrace{
+        \mathbf{R}_t
+    }_{\text{observation noise}}.
+\]
+
+Since $\bm{x}_t$ and $\bm{z}_t$ are jointly Gaussian, conditioning on the newly observed $\bm{z}_t$ gives a Gaussian posterior:
+\[
+    p(
+        \bm{x}_t
+        \mid
+        \bm{z}_{1:t},
+        \bm{u}_{1:t}
+    )
+    =
+    \mathcal{N}
+    \left(
+        \bm{\mu}_{t\mid t},
+        \mathbf{\Sigma}_{t\mid t}
+    \right).
+\]
+
+For jointly Gaussian random vectors, the conditional mean is
+\[
+\begin{aligned}
+    \bm{\mu}_{t\mid t}
+    &=
+    \mathbb{E}[\bm{x}_t\mid\bm{z}_t]
+    \\
+    &=
+    \mathbb{E}[\bm{x}_t]
+    +
+    \operatorname{Cov}(\bm{x}_t,\bm{z}_t)
+    \operatorname{Cov}(\bm{z}_t)^{-1}
+    \left(
+        \bm{z}_t
+        -
+        \mathbb{E}[\bm{z}_t]
+    \right)
+    \\
+    &=
+    \bm{\mu}_{t\mid t-1}
+    +
+    \mathbf{\Sigma}_{t\mid t-1}
+    \mathbf{H}_t^\top
+    \mathbf{S}_t^{-1}
+    \left(
+        \bm{z}_t
+        -
+        \mathbf{H}_t
+        \bm{\mu}_{t\mid t-1}
+    \right).
+\end{aligned}
+\]
+
+Define the \emph{Kalman gain}
+\[
+    {
+        \mathbf{K}_t
+        :=
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+        \mathbf{S}_t^{-1}
+    }.
+\]
+
+The posterior mean can therefore be written compactly as
+\[
+    {
+        \bm{\mu}_{t\mid t}
+        =
+        \bm{\mu}_{t\mid t-1}
+        +
+        \mathbf{K}_t
+        \bm{\nu}_t
+    }.
+\]
+
+Thus, the new observation corrects the predicted mean by an amount proportional to the innovation $\bm{\nu}_t$, while the Kalman gain $\mathbf{K}_t$ determines how strongly the observation should influence the estimate.
+
+For jointly Gaussian random vectors, the conditional covariance is
+\[
+\begin{aligned}
+    \mathbf{\Sigma}_{t\mid t}
+    &=
+    \operatorname{Cov}(\bm{x}_t\mid\bm{z}_t)
+    \\
+    &=
+    \operatorname{Cov}(\bm{x}_t)
+    -
+    \operatorname{Cov}(\bm{x}_t,\bm{z}_t)
+    \operatorname{Cov}(\bm{z}_t)^{-1}
+    \operatorname{Cov}(\bm{z}_t,\bm{x}_t)
+    \\
+    &=
+    \mathbf{\Sigma}_{t\mid t-1}
+    -
+    \mathbf{\Sigma}_{t\mid t-1}
+    \mathbf{H}_t^\top
+    \mathbf{S}_t^{-1}
+    \mathbf{H}_t
+    \mathbf{\Sigma}_{t\mid t-1}
+    \\
+    &=
+    {
+        \mathbf{\Sigma}_{t\mid t-1}
+        -
+        \mathbf{K}_t
+        \mathbf{H}_t
+        \mathbf{\Sigma}_{t\mid t-1}
+    }.
+\end{aligned}
+\]
+
+Equivalently,
+\[
+    {
+        \mathbf{\Sigma}_{t\mid t}
+        =
+        \left(
+            \mathbf{I}
+            -
+            \mathbf{K}_t\mathbf{H}_t
+        \right)
+        \mathbf{\Sigma}_{t\mid t-1}
+    }.
+\]
+
+Therefore, the correction step of the Kalman filter can be summarized as
+\[
+    {
+    \begin{aligned}
+        \bm{\nu}_t
+        &=
+        \bm{z}_t
+        -
+        \mathbf{H}_t
+        \bm{\mu}_{t\mid t-1},
+        \\
+        \mathbf{S}_t
+        &=
+        \mathbf{H}_t
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+        +
+        \mathbf{R}_t,
+        \\
+        \mathbf{K}_t
+        &=
+        \mathbf{\Sigma}_{t\mid t-1}
+        \mathbf{H}_t^\top
+        \mathbf{S}_t^{-1},
+        \\
+        \bm{\mu}_{t\mid t}
+        &=
+        \bm{\mu}_{t\mid t-1}
+        +
+        \mathbf{K}_t\bm{\nu}_t,
+        \\
+        \mathbf{\Sigma}_{t\mid t}
+        &=
+        \left(
+            \mathbf{I}
+            -
+            \mathbf{K}_t\mathbf{H}_t
+        \right)
+        \mathbf{\Sigma}_{t\mid t-1}.
+    \end{aligned}
+    }
+\]
+
+Hence, the Kalman filter alternates between two operations:
+\[
+    {
+        \text{prediction}
+        \quad\longrightarrow\quad
+        \text{correction}
+    }.
+\]
+
+The prediction step propagates the previous posterior distribution through the linear-Gaussian state transition model, while the correction step combines the resulting predictive distribution with the new observation. Because Gaussian distributions are closed under linear transformations and Gaussian conditioning, both the predictive and posterior state distributions remain Gaussian at every time step.
 
 \end{document}
