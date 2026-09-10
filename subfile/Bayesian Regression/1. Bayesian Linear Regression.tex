@@ -4,9 +4,9 @@
 \begin{document}
 
 
-\chapter{Bayesian Linear Regression}
+\section{Bayesian Linear Regression}
 
-\section{Basic Settings}
+\subsection{Basic Settings}
 
 Consider a training dataset 
 \[
@@ -67,10 +67,10 @@ Consequently,
 
 Bayesian method includes two basic steps: inference and prediction, where inference is to estimate posterior $\bm{w}$, while prediction is to predict ${y}^{*}$ given $\bm{x}^{*}$.
 
-\section{Inference}
+\subsection{Inference}
 
 
-\subsection{Model Establishment}
+\subsubsection{Model Establishment}
 
 In Bayesian linear regression, the coefficient vector $\bm{w}$ is treated as a random variable and assigned a prior distribution. We assume that the prior distribution of $\bm{w}$ does not depend on $\mathbf{X}$, i.e., $w\perp X$, and thus $p(\bm w\mid\mathbf X)=p(\bm w)$.
 
@@ -111,7 +111,7 @@ Thus,
 
 The remaining task is therefore to derive the posterior mean $\bm{\mu}_w$ and posterior covariance $\mathbf{\Sigma}_w$.
 
-\subsection{Model Solution}
+\subsubsection{Model Solution}
 
 To derive the posterior distribution, we first write the product of the likelihood and the prior explicitly:
 \[
@@ -157,7 +157,7 @@ where
 \]
 
 
-\section{Prediction}
+\subsection{Prediction}
 
 After obtaining the posterior distribution of the coefficient vector, Bayesian linear regression can be used to predict the responses associated with new observations.
 
