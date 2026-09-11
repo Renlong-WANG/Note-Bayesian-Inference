@@ -1,0 +1,128 @@
+\documentclass[../../Bayesian_Inference.tex]{subfiles}
+
+\begin{document}
+
+\section{General Framework of Bayesian Regression}
+
+Consider a training dataset
+\[
+    \mathcal{D} = \left\{(\bm{x}_i,y_i)\right\}_{i=1}^{N},
+\]
+consisting of $N$ observations, where $\bm{x}_i \in \mathbb{R}^{p}$ denotes the $p$-dimensional predictor vector associated with the $i$-th observation, and $y_i \in \mathbb{R}$ denotes the corresponding scalar response. Define the design matrix $\mathbf{X}$, response vector $\bm{y}$, and regression coefficient vector $\bm{w}$ as
+\[
+    \mathbf{X} =
+    \begin{bmatrix}
+        \bm{x}_1^{\top} \\
+        \vdots \\
+        \bm{x}_N^{\top}
+    \end{bmatrix}
+    \in \mathbb{R}^{N \times p},
+    \qquad
+    \bm{y} =
+    \begin{bmatrix}
+        y_1 \\
+        \vdots \\
+        y_N
+    \end{bmatrix}
+    \in \mathbb{R}^{N},
+    \qquad
+    \bm{w} =
+    \begin{bmatrix}
+        w_1 \\
+        \vdots \\
+        w_p
+    \end{bmatrix}
+    \in \mathbb{R}^{p}.
+\]
+
+Given the predictor vector $\bm{x}_i$ and the regression coefficient vector $\bm{w}$, the response $y_i$ is characterized by the conditional distribution
+\[
+    p(y_i \mid \bm{x}_i, \bm{w}).
+\]
+Assuming that the observations are conditionally independent given $\bm{w}$, the likelihood of the observed response vector is
+\[
+    p(\bm{y} \mid \mathbf{X}, \bm{w})
+    =
+    \prod_{i=1}^{N}
+    p(y_i \mid \bm{x}_i, \bm{w}).    
+\]
+
+In the Bayesian framework, the regression coefficient vector $\bm{w}$ is treated as a random variable and assigned a prior distribution $p(\bm{w})$. Given the observed dataset $\mathcal{D} = (\mathbf{X},\bm{y})$, Bayes' theorem gives
+\[
+    p(\bm{w} \mid \mathcal{D})
+    =
+    p(\bm{w} \mid \mathbf{X}, \bm{y})
+    =
+    \frac{p(\bm{w},\mathbf{X},\bm{y})}
+         {p(\mathbf{X},\bm{y})}.
+\]
+Using
+\[
+    p(\mathbf{X},\bm{y})
+    =
+    p(\bm{y}\mid\mathbf{X})p(\mathbf{X}),
+\]
+the posterior distribution can be written as
+\[
+    p(\bm{w} \mid \mathbf{X}, \bm{y})
+    =
+    \frac{p(\bm{w},\bm{y}\mid\mathbf{X})}
+         {p(\bm{y}\mid\mathbf{X})}
+    =
+    \frac{
+        p(\bm{y}\mid\mathbf{X},\bm{w})
+        p(\bm{w}\mid\mathbf{X})
+    }{
+        p(\bm{y}\mid\mathbf{X})
+    }.
+\]
+Assuming that the prior distribution of $\bm{w}$ is independent of the design matrix $\mathbf{X}$, i.e.,
+\[
+    p(\bm{w}\mid\mathbf{X}) = p(\bm{w}),
+\]
+the posterior distribution becomes
+\begin{equation}
+    \boxed{p(\bm{w} \mid \mathbf{X}, \bm{y})
+    =
+    \frac{
+        p(\bm{y} \mid \mathbf{X}, \bm{w})
+        p(\bm{w})
+    }{
+        p(\bm{y}\mid\mathbf{X})
+    }}.    
+\end{equation} 
+The denominator
+\begin{equation}
+    \boxed{p(\bm{y}\mid\mathbf{X})
+    =
+    \int
+    p(\bm{y}\mid\mathbf{X},\bm{w})
+    p(\bm{w})
+    \mathrm{d}\bm{w}}    
+\end{equation} 
+is referred to as the marginal likelihood, or model evidence. 
+
+Since it does not depend on $\bm{w}$, the posterior distribution can be expressed up to a proportionality constant as
+\begin{equation}
+    \boxed{p(\bm{w} \mid \mathbf{X}, \bm{y})
+    \propto
+    p(\bm{y} \mid \mathbf{X}, \bm{w})
+    p(\bm{w})},   
+\end{equation}
+where $p(\bm{y} \mid \mathbf{X}, \bm{w})$ represents the likelihood and $p(\bm{w})$ represents the prior distribution. Therefore, the fundamental principle of Bayesian inference can be summarized as
+\[
+    \boxed{\text{Posterior}
+    \propto
+    \text{Likelihood}
+    \times
+    \text{Prior}}.
+\]
+
+The objective of Bayesian regression is to infer the posterior distribution of the regression coefficient vector $\bm{w}$ given the observed dataset $\mathcal{D}$, and subsequently to obtain the posterior predictive distribution of the response $y^{*}$ for a new observation with predictor vector $\bm{x}^{*}$.
+\[
+    p(\bm{y}^* | \mathbf{X}^{*}, \mathcal{D}) = \int p(\bm{y}^* | \mathbf{X}^{*}, \bm{w}) p(\bm{w} | \mathcal{D}) \mathrm{d} \bm{w}.
+\]
+
+
+
+\end{document}

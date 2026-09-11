@@ -189,7 +189,7 @@ Therefore,
     \right).
 \]
 
-The difference between the actual observation and its predicted mean is called the \textit{innovation}:
+The difference between the actual observation and its predicted mean is called the \emph{innovation}:
 \[
     \bm{\nu}_t =\bm{z}_t-\mathbb{E}[\bm{z}_t]=\bm{z}_t-\mathbf{H}_t\bm{\mu}_{t\mid t-1}.
 \]
@@ -204,7 +204,7 @@ Its covariance is
     \mathrm{Cov}(\bm{\nu}_t) = \mathrm{Cov}(\bm{z}_t) = \mathbf{H}_t\mathbf{\Sigma}_{t\mid t-1}\mathbf{H}_t^\top + \mathbf{R}_t.
 \]
 
-We define the \textit{innovation covariance}
+We define the \emph{innovation covariance}
 \[
     \mathbf{S}_t = \underbrace{ \mathbf{H}_t\mathbf{\Sigma}_{t\mid t-1}\mathbf{H}_t^\top }_{\text{uncertainty in the predicted observation}} + \underbrace{ \mathbf{R}_t }_{\text{observation noise}}.
 \]
@@ -228,7 +228,7 @@ For jointly Gaussian random vectors, the conditional mean is
 \end{aligned}
 \]
 
-Define the \textit{Kalman gain}
+Define the \emph{Kalman gain}
 \[
     \mathbf{K}_t = \mathbf{\Sigma}_{t\mid t-1}\mathbf{H}_t^\top\mathbf{S}_t^{-1}.
 \]

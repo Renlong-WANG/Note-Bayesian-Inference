@@ -12,9 +12,9 @@ Let
 \[
     \bm{x}_t \in \mathbb{R}^{n_{\bm{x}}}
 \]
-denote the \textit{state} vector at time $t$, which represents the unknow quantity we want to infer.
+denote the \emph{state} vector at time $t$, which represents the unknow quantity we want to infer.
 
-At each time $t$, we have \textit{observation}
+At each time $t$, we have \emph{observation}
 \[
     \bm{z}_t \in \mathbb{R}^{n_{\bm{z}}},
 \]
@@ -23,7 +23,7 @@ which contains information about the hidden state $\bm{x}_t$, but may be noisy a
     \bm{z}_{1:t} = \left\{ \bm{z}_1, \dots, \bm{z}_t \right\}
 \]
 
-Similarly, suppose that a \textit{control input} is available at each time $t$, denoted by
+Similarly, suppose that a \emph{control input} is available at each time $t$, denoted by
 \[
     \bm{u}_t \in \mathbb{R}^{n_{\bm{u}}},
 \]
@@ -42,7 +42,7 @@ whereas the states
 \]
 are not directly observed.
 
-Since subsequent inference depends on the state, the objective is to characterize the uncertainty associated with the random variable $\bm{x}_t$ given all available information. This uncertainty is represented by the \textit{belief state}
+Since subsequent inference depends on the state, the objective is to characterize the uncertainty associated with the random variable $\bm{x}_t$ given all available information. This uncertainty is represented by the \emph{belief state}
 \[
     \mathrm{bel}(\bm{x}_t) = p(\bm{x}_t | \bm{z}_{1:t}, \bm{u}_{1:t}).
 \]

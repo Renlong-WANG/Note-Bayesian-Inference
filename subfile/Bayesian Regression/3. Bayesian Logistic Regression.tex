@@ -1,0 +1,127 @@
+\documentclass[../Bayesian_Inference.tex]{subfiles}
+\usepackage{bm}
+
+\begin{document}
+
+
+\section{Bayesian Logistic Regression}
+
+\subsection{Basic Settings}
+
+Consider a training dataset 
+\[
+    \mathcal{D} = \left\{(x_i,y_i)\right\}_{i=1}^{N},
+\]
+consisting of $N$ observations, where $\bm{x}_i \in \mathbb{R}^{p}$ denotes the $p$-dimensional feature vector associated{w}ith the $i$-th observation and $y_i \in \mathbb{B} = \{0,1\}$ denotes the corresponding binary classification, like{y}es/no and success/failure. 
+
+Define design matrix $\mathbf{X}$, target vector $\bm{y}$, and coefficient vector $\bm{w}$ as 
+\[
+    \mathbf{X} = \begin{bmatrix}
+        \bm{x}_1^{\top} \\
+        \vdots \\
+        \bm{x}_N^{\top}
+    \end{bmatrix} \in \mathbb{R}^{N \times p}, \qquad
+    \bm{y} = \begin{bmatrix}
+        {y}_1 \\
+        \vdots \\
+        {y}_N
+    \end{bmatrix} \in \mathbb{R}^{N}, \qquad
+    \bm{w} = \begin{bmatrix}
+        {w}_1 \\
+        \vdots \\
+        {w}_p
+    \end{bmatrix} \in \mathbb{R}^{p}.
+\]
+
+The objective of logistic regression is to model the conditional probability $p(y_i | \bm{x}_u, \bm{w})$ rather than directly modeling the binary response $y_i$. 
+
+Since $y_i$ is binary, we assume that
+\[
+   {y}_i | \bm{x}_u, \bm{w} \sim \mathrm{Bernoulli}(p_i),
+\]
+where 
+\[
+    p_i = p(y_i = 1 | \bm{x}_u, \bm{w}), \qquad 1- p_i = p(y_i = 0 | \bm{x}_u, \bm{w}).
+\]
+
+Recall that in linear regression, the response is modeled as
+\[
+   {y}_i = \bm{w}^{\top} \bm{x}_i + \epsilon_i,
+\]
+where the linear predictor $\bm{w}^{\top}\bm{x}_i$ can take any real value $\bm{w}^{\top} \bm{x}_i \in (- \bm{\infty}, + \bm{\infty})$. In contrast, a probability must satisfy $p_i \in (0,1)$. Therefore, we need a function that maps the linear predictor from $\mathbb{R}$ to the interval $(0,1)$. 
+
+In logistic regression, this mapping is provided by the \emph{logistic function}, also known as the \emph{sigmoid function}: 
+\[
+    p_i = \sigma(\bm{w}^{\top}\bm{x}_i) = \frac{1}{1+\exp(-\bm{w}^{\top}\bm{x}_i)} \in (0,1).
+\]
+Equivalently, the probability of observing $y_i \in {0,1}$ can be{w}ritten as 
+\[
+    p(y_i \mid \bm{x}_i,\bm{w}) = p_i^{y_i}(1-p_i)^{1-y_i}.
+\]
+
+Assuming that the observations are conditionally independent given $\bm{w}$ and $\mathbf{X}$, the likelihood of the entire dataset is
+\[
+    p(\bm{y}| \mathbf{X}, \bm{w}) = \prod_{i=1}^{N} p_i^{y_i} (1 - p_i)^{1-y_i} = \prod_{i=1}^{N} \sigma(\bm{w}^{\top}\bm{x}_i)^{y_i} (1 - \sigma(\bm{w}^{\top}\bm{x}_i))^{1-y_i}.
+\]
+
+
+\subsection{Inference and Prediction}
+
+In Bayesian regression, the coefficient vector $\bm{w}$ is treated as a random variable and assigned a prior distribution $p(\bm{w})$. We assume that the prior distribution of $\bm{w}$ does not depend on $\mathbf{X}$, and thus $p(\bm{w}\mid\mathbf{X})=p(\bm{w})$.
+
+
+Given the training dataset, Bayesian formula is decomposed as: 
+\[
+    p(\bm{w} | \mathcal{D}) = p(\bm{w} | \mathbf{X}, \bm{y}) = \frac{p(\bm{w}, \mathbf{X}, \bm{y})}{\textcolor{red}{p(\mathbf{X}, \bm{y})}} = \frac{\textcolor{red}{p(\bm{w}, \mathbf{X}, \bm{y})}}{p(\bm{y}|\mathbf{X}) \textcolor{red}{p(\mathbf{X})} } = \frac{\textcolor{red}{p(\bm{w}, \bm{y} | \mathbf{X})}}{p(\bm{y}|\mathbf{X})} = \frac{p(\bm{y} | \mathbf{X}, \bm{w}) \textcolor{red}{p(\bm{w} | \mathbf{X})}}{p(\bm{y}|\mathbf{X})} = \frac{p(\bm{y} | \mathbf{X}, \bm{w}) p(\bm{w})}{p(\bm{y}|\mathbf{X})},
+\]
+where the fifth equality follows from
+\[
+    p(\bm{y} | \mathbf{X}, \bm{w}) = \frac{p(\bm{w}, \mathbf{X}, \bm{y})}{p(\bm{w}, \mathbf{X})} = \frac{p(\bm{w}, \mathbf{X}, \bm{y})}{ p(\bm{w} | \mathbf{X}) p(\mathbf{X})} = \frac{p(\bm{w}, \bm{y} | \mathbf{X})}{p(\bm{w} | \mathbf{X})},
+\]
+and the last equality follows from independency of prior coefficient and design matrix. 
+
+The denominator 
+\[
+    p(\bm{y}\mid\mathbf{X}) = \int p(\bm{y}\mid\mathbf{X},\bm{w}) p(\bm{w})\mathrm{d}\bm{w}
+\]  
+is the marginal likelihood. Since it does not depend on $\bm{w}$, the posterior distribution can be expressed up to a proportionality constant as 
+\[
+    p(\bm{w} | \mathbf{X}, \bm{y}) \propto p(\bm{y} | \mathbf{X}, \bm{w}) p(\bm{w}),
+\]
+where $p(\bm{y} | \mathbf{X}, \bm{w})$ is a likelihood function and $p(\bm{w})$ is a prior function.
+
+In  general, we do not impose a particular parametric form on the prior distribution at this stage. Although the posterior is fully specified by the likelihood and the prior, it does not necessarily admit a closed-form expression. In particular, evaluating the normalizing constant
+\[
+    p(\bm{y} | \mathbf{X}) = \int p(\bm{y}\mid\mathbf{X},\bm{w})p(\bm{w}) \mathrm{d} \bm{w}
+\]
+may be analytically intractable. Therefore, rather than evaluating the posterior density explicitly, Bayesian inference is often performed using numerical approximation methods.
+
+A common approach is to generate a collection of samples
+\[
+    \bm{w}^{(1)},\bm{w}^{(2)},\ldots,\bm{w}^{(S)} \sim p(\bm{w} | \mathbf{X},\bm{y}),
+\]
+or approximately from this posterior distribution, using sampling-based inference methods such as Markov chain Monte Carlo (MCMC). These samples provide an empirical approximation to the posterior distribution and can be used to estimate posterior quantities of interest. For example, for an arbitrary function $g(\bm{w})$,
+\[
+\mathbb E[g(\bm w)\mid\mathbf X,\bm y]
+=
+\int
+g(\bm w)
+p(\bm w\mid\mathbf X,\bm y)
+\mathrm d\bm w
+\approx
+\frac{1}{S}
+\sum_{s=1}^{S}
+g\left(\bm w^{(s)}\right).
+\]
+
+For a new observation with covariate vector $\mathbf{X}^{*}$, prediction is based on the posterior predictive distribution 
+\[
+    p(\bm{y}^* | \mathbf{X}^{*}, \mathcal{D}) = \int p(\bm{y}^* | \mathbf{X}^{*}, \bm{w}) p(\bm{w} | \mathcal{D}) \mathrm{d} \bm{w}.
+\]
+Using posterior samples, this integral can be approximated by Monte Carlo integration as
+\[
+    p(\bm{y}^* | \mathbf{X}^{*}, \mathcal{D}) \approx \frac{1}{S} \sum_{s =1}^{S} p\left(\bm{y}^* | \mathbf{X}^{*}, \bm w^{(s)}\right)
+\]
+
+
+\end{document}

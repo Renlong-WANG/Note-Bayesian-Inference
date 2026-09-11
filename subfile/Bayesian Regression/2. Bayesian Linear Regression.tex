@@ -65,14 +65,13 @@ Consequently,
     p(\bm{y} | \mathbf{X}, \bm{w}) \sim \mathcal{N}(\mathbf{X}\bm{w}, \sigma^2 \mathbf{I}_N).
 \]
 
-Bayesian method includes two basic steps: inference and prediction, where inference is to estimate posterior $\bm{w}$, while prediction is to predict ${y}^{*}$ given $\bm{x}^{*}$.
-
 \subsection{Inference}
 
+Bayesian method includes two basic steps: inference and prediction, where inference is to estimate posterior $\bm{w}$, while prediction is to predict ${y}^{*}$ given $\bm{x}^{*}$.
 
 \subsubsection{Model Establishment}
 
-In Bayesian linear regression, the coefficient vector $\bm{w}$ is treated as a random variable and assigned a prior distribution. We assume that the prior distribution of $\bm{w}$ does not depend on $\mathbf{X}$, i.e., $w\perp X$, and thus $p(\bm w\mid\mathbf X)=p(\bm w)$.
+In Bayesian regression, the coefficient vector $\bm{w}$ is treated as a random variable and assigned a prior distribution $p(\bm w)$. We assume that the prior distribution of $\bm{w}$ does not depend on $\mathbf{X}$, i.e., $w\perp X$, and thus $p(\bm w\mid\mathbf X)=p(\bm w)$.
 
 Given the training dataset, Bayesian formula is decomposed as: 
 \[

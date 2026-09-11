@@ -1,0 +1,113 @@
+\documentclass[../../Bayesian_Inference.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Fundamentals of Bayesian Inference} 
+
+Consider an observed dataset $\mathcal{D}$ and a statistical model parameterized by an unknown parameter vector $\bm{\theta} \in \Theta$, where $\Theta$ denotes the parameter space. In the Bayesian framework, uncertainty about $\bm{\theta}$ before observing the data is represented by a prior distribution $p(\bm{\theta})$.
+
+Given a particular value of $\bm{\theta}$, the observed data are characterized by the conditional distribution
+\[
+    p(\mathcal{D}\mid\bm{\theta}),
+\]
+which, when viewed as a function of $\bm{\theta}$ for fixed $\mathcal{D}$, defines the likelihood function.
+
+The joint distribution of $\bm{\theta}$ and $\mathcal{D}$ can be factorized in two equivalent ways:
+\[
+    p(\bm{\theta},\mathcal{D})
+    =
+    p(\mathcal{D}\mid\bm{\theta})p(\bm{\theta}),
+    \qquad 
+    p(\bm{\theta},\mathcal{D})
+    =
+    p(\bm{\theta}\mid\mathcal{D})p(\mathcal{D}).
+\]
+Equating the two factorizations yields
+\[
+    p(\bm{\theta}\mid\mathcal{D})p(\mathcal{D})
+    =
+    p(\mathcal{D}\mid\bm{\theta})p(\bm{\theta}),
+\]
+and therefore Bayes' theorem gives
+\begin{equation}
+    \boxed{
+    p(\bm{\theta}\mid\mathcal{D})
+    =
+    \frac{
+        p(\mathcal{D}\mid\bm{\theta})p(\bm{\theta})
+    }{
+        p(\mathcal{D})
+    }}
+    .
+\end{equation}
+
+The denominator is obtained by marginalizing the joint distribution over the parameter space:
+\begin{equation}
+    \boxed{p(\mathcal{D})
+    = 
+    \int_{\Theta}
+    p(\mathcal{D}\mid\bm{\theta})
+    p(\bm{\theta})
+    \mathrm{d}\bm{\theta}}
+    .    
+\end{equation} 
+
+The quantity $p(\mathcal{D})$ is referred to as the marginal likelihood, or model evidence. It normalizes the posterior distribution so that
+\[
+    \int_{\Theta}
+    p(\bm{\theta}\mid\mathcal{D})
+    \mathrm{d}\bm{\theta}
+    =
+    1.
+\]
+
+For a fixed observed dataset $\mathcal{D}$, the marginal likelihood $p(\mathcal{D})$ does not depend on $\bm{\theta}$. Hence, the posterior distribution can be written up to a proportionality constant as
+\begin{equation}
+    \boxed{
+    p(\bm{\theta}\mid\mathcal{D})
+    \propto
+    p(\mathcal{D}\mid\bm{\theta})
+    p(\bm{\theta})}.
+\end{equation}
+
+Thus, the basic principle of Bayesian inference can be summarized as
+\[
+    \boxed{
+    \text{Posterior}
+    \propto
+    \text{Likelihood}
+    \times
+    \text{Prior}}.
+\]
+
+Bayesian inference can also be used to quantify uncertainty about future observations. Let $\mathcal{D}^{*}$ denote a future observation or a set of future observations. By marginalizing over the uncertainty in $\bm{\theta}$, the posterior predictive distribution is
+\[
+    p(\mathcal{D}^{*}\mid\mathcal{D})
+    =
+    \int_{\Theta}
+    p(\mathcal{D}^{*}\mid\bm{\theta},\mathcal{D})
+    p(\bm{\theta}\mid\mathcal{D})
+    \mathrm{d}\bm{\theta}.
+\]
+
+If $\mathcal{D}^{*}$ is conditionally independent of $\mathcal{D}$ given $\bm{\theta}$, i.e., $\mathcal{D}^{*} \perp \mathcal{D} \mid \bm{\theta}$, then
+\[
+    p(\mathcal{D}^{*}\mid\bm{\theta},\mathcal{D})
+    =
+    p(\mathcal{D}^{*}\mid\bm{\theta}),
+\]
+and the posterior predictive distribution reduces to
+\begin{equation}
+    \boxed{
+    p(\mathcal{D}^{*}\mid\mathcal{D})
+    =
+    \int_{\Theta}
+    p(\mathcal{D}^{*}\mid\bm{\theta})
+    p(\bm{\theta}\mid\mathcal{D})
+    \mathrm{d}\bm{\theta}}
+    .
+\end{equation} 
+The posterior predictive distribution therefore propagates uncertainty in model the parameters into uncertainty about future observations by averaging the predictive distribution over the posterior distribution of $\bm{\theta}$. 
+
+
+\end{document}
